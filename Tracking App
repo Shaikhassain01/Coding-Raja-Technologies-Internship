@@ -1,0 +1,91 @@
+from tkinter import *
+from tkinter import ttk  # for themed widgets
+from datetime import datetime
+
+# Define a class to represent an expense
+class Expense:
+  def __init__(self, category, date, amount):
+    self.category = category
+    self.date = date
+    self.amount = amount
+
+# Function to get user input for a new expense
+def get_new_expense():
+  new_expense_window = Toplevel(root)
+  new_expense_window.title("Add New Expense")
+
+  category_label = Label(new_expense_window, text="Category:")
+  category_label.pack()
+  category_entry = ttk.Combobox(new_expense_window, values=["Food", "Groceries", "Bills", "Entertainment", "Other"])
+  category_entry.pack()
+
+  date_label = Label(new_expense_window, text="Date (YYYY-MM-DD):")
+  date_label.pack()
+  date_entry = Entry(new_expense_window)
+  date_entry.pack()
+
+  amount_label = Label(new_expense_window, text="Amount:")
+  amount_label.pack()
+  amount_entry = Entry(new_expense_window)
+  amount_entry.pack()
+
+  def add_expense():
+    category = category_entry.get()
+    date_str = date_entry.get()
+    try:
+      date = datetime.strptime(date_str, "%Y-%m-%d")
+    except ValueError:
+      print("Invalid date format!")
+      return
+    amount = float(amount_entry.get())
+    expenses.append(Expense(category, date, amount))
+    update_expense_list()
+    new_expense_window.destroy()
+
+  add_button = Button(new_expense_window, text="Add Expense", command=add_expense)
+  add_button.pack()
+
+# Function to update the list of expenses
+def update_expense_list():
+  expense_list.delete(*expense_list.get_children())
+  for expense in expenses:
+    expense_list.insert("", END, values=(expense.category, expense.date.strftime('%Y-%m-%d'), expense.amount))
+
+# Function to calculate total expense
+def calculate_total():
+  total = sum(expense.amount for expense in expenses)
+  total_label.config(text=f"Total Expense: ${total:.2f}")
+
+# Main window setup
+root = Tk()
+root.title("Expense Tracker")
+
+# Expense list frame
+expense_list_frame = Frame(root)
+expense_list_frame.pack(pady=10)
+
+expense_list = ttk.Treeview(expense_list_frame, columns=("Category", "Date", "Amount"), show="headings")
+expense_list.heading("#0", text="ID")
+expense_list.heading("Category", text="Category")
+expense_list.heading("Date", text="Date")
+expense_list.heading("Amount", text="Amount")
+expense_list.pack(fill=BOTH, expand=True)
+
+# Button frame
+button_frame = Frame(root)
+button_frame.pack()
+
+add_button = Button(button_frame, text="Add Expense", command=get_new_expense)
+add_button.pack(side=LEFT, padx=10)
+
+total_label = Label(button_frame, text="Total Expense: $0.00")
+total_label.pack(side=LEFT)
+
+calculate_button = Button(button_frame, text="Calculate Total", command=calculate_total)
+calculate_button.pack(side=RIGHT, padx=10)
+
+# Expenses list (initially empty)
+expenses = []
+
+# Run the main event loop
+root.mainloop()
